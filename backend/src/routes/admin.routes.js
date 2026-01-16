@@ -14,5 +14,11 @@ router.get("/users", adminController.getUsers);
 
 router.post("/stores", adminController.addStore);
 router.get("/stores", adminController.getStores);
+router.get(
+  "/users/:id",
+  authMiddleware,
+  roleMiddleware("admin"),
+  adminController.getUserById
+);
 
 module.exports = router;

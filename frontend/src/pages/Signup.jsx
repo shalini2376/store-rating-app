@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
   const navigate = useNavigate();
-    const [signUp, setSignUp] = useState(false)
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    address: "",
-    password: "",
-  });
+    const [loading, setLoading] = useState(false)
+    const [form, setForm] = useState({
+        name: "",
+        email: "",
+        address: "",
+        password: "",
+    });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,10 +18,10 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const res = await api.post("/auth/signup", form);
-      setSignUp(true)
       alert(res.data.message);
       navigate("/"); // redirect to login
     } catch (err) {
@@ -30,6 +30,8 @@ export default function Signup() {
           err.response?.data?.errors?.[0]?.msg ||
           "Signup failed"
       );
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -71,7 +73,9 @@ export default function Signup() {
       />
       <br />
 
-      <button type="submit">{signUp ? "signing In" : "sign up"}</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "Signing Up..." : "Sign up"}
+      </button>
     </form>
   );
 }

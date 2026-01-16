@@ -10,5 +10,11 @@ router.use(roleMiddleware("user"));
 
 router.get("/stores", userController.getStores);
 router.post("/ratings", userController.submitRating);
+router.patch(
+  "/ratings/:storeId",
+  authMiddleware,
+  roleMiddleware("user"),
+  userController.updateRating
+);
 
 module.exports = router;

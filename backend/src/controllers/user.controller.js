@@ -57,3 +57,33 @@ exports.submitRating = (req, res) => {
         res.json({ message: "Rating submitted successfully" });
     });
 }
+
+exports.updateRating = (req, res) => {
+  const userId = req.user.id;
+  const storeId = req.params.storeId;
+  const { rating } = req.body;
+
+  if (rating < 1 || rating > 5) {
+    return res.status(400).json({ message: "Rating must be between 1 and 5" });
+  }
+
+  db.run(
+    `
+    UPDATE Ratings
+    SET rating = ?
+    WHERE user_id = ? AND store_id = ?
+    `,
+    [rating, userId, storeId],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ message: "Rating not found" });
+      }
+
+      res.json({ message: "Rating updated successfully" });
+    }
+  );
+};

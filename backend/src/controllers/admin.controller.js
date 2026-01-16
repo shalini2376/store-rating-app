@@ -104,3 +104,47 @@ exports.getStores = (req, res) => {
         res.json(rows);
     });
 };
+
+exports.getUserById = (req, res) => {
+  const userId = req.params.id;
+
+  db.get(
+    "SELECT id, name, email, address, role FROM Users WHERE id = ?",
+    [userId],
+    (err, user) => {
+      if (err) {
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If user is NOT a store owner, return basic details
+      if (user.role !== "owner") {
+        return res.json(user);
+      }
+
+      // If user IS a store owner, include store rating
+      db.get(
+        `
+        SELECT AVG(R.rating) as averageRating
+        FROM Stores S
+        LEFT JOIN Ratings R ON S.id = R.store_id
+        WHERE S.owner_id = ?
+        `,
+        [userId],
+        (err, row) => {
+          if (err) {
+            return res.status(500).json({ message: "Server error" });
+          }
+
+          res.json({
+            ...user,
+            averageRating: row?.averageRating || 0,
+          });
+        }
+      );
+    }
+  );
+};
