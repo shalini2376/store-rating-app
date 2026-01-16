@@ -58,3 +58,29 @@ exports.login = (req, res) => {
         }
     )
 }
+
+exports.logout = (req, res) => {
+    return res.json({message: "Logged out successfully"});
+}
+
+exports.updatePassword = async (req, res) => {
+    const {currentPassword, newPassword} = req.body;
+
+    const user = await db.get(
+        "SELECT password FROM Users WHERE id = ?",
+        [req.user.id]
+    )
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch){
+        return res.status(400).json({message: "Old password incorrect"});
+    } 
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.run(
+        "Update Users SET password = ? WHERE id = ? ",
+        [hashedPassword, req.user.id]
+    );
+
+    res.json({message: "Password updated successfully"});
+}
